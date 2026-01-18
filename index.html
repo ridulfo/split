@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Splitter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .currency-selector {
+            margin-bottom: 20px;
+        }
+
+        .currency-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .currency-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .currency-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .person-entry {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .person-entry input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .person-entry input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .person-entry input[type="number"] {
+            flex: 1.5;
+        }
+
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #ee5a6f;
+        }
+
+        .add-btn, .calculate-btn, .share-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover, .calculate-btn:hover, .share-btn:hover {
+            background: #5568d3;
+        }
+
+        .calculate-btn {
+            background: #10ac84;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            background: #0e9770;
+        }
+
+        .share-btn {
+            background: #2ecc71;
+            margin-top: 10px;
+        }
+
+        .share-btn:hover {
+            background: #27ae60;
+        }
+
+        .results {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .results-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .result-row {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .settlement-row {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #10ac84;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .amount {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .owed {
+            color: #10ac84;
+        }
+
+        .owes {
+            color: #ff4757;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            flex: 1;
+            min-width: 150px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10ac84;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        @media (max-width: 600px) {
+            .person-entry {
+                flex-wrap: wrap;
+            }
+
+            .person-entry input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Expense Splitter</h1>
+            <p class="subtitle">Calculate who owes who and share the results</p>
+        </header>
+
+        <div class="content">
+            <div class="input-section">
+                <div class="currency-selector">
+                    <label for="currency">Currency</label>
+                    <select id="currency" onchange="currencyChanged()">
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="SEK" selected>SEK (kr)</option>
+                        <option value="NOK">NOK (kr)</option>
+                        <option value="DKK">DKK (kr)</option>
+                        <option value="CHF">CHF (Fr)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="CNY">CNY (¥)</option>
+                        <option value="INR">INR (₹)</option>
+                        <option value="AUD">AUD ($)</option>
+                        <option value="CAD">CAD ($)</option>
+                        <option value="BRL">BRL (R$)</option>
+                        <option value="MXN">MXN ($)</option>
+                    </select>
+                </div>
+                <div id="people-list"></div>
+                <button class="add-btn" onclick="addPerson()">+ Add Person</button>
+                <button class="calculate-btn" onclick="calculate()">Calculate Split</button>
+            </div>
+
+            <div class="results" id="results">
+                <div class="summary">
+                    <div class="summary-item">
+                        <div class="summary-label">Total</div>
+                        <div class="summary-value" id="total">$0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Per Person</div>
+                        <div class="summary-value" id="perPerson">$0</div>
+                    </div>
+                </div>
+
+                <div class="results-box">
+                    <h3>Balances</h3>
+                    <div id="balances"></div>
+                </div>
+
+                <div class="results-box">
+                    <h3>Settlements</h3>
+                    <div id="settlements"></div>
+                </div>
+
+                <button class="share-btn" onclick="shareLink()">📋 Copy Shareable Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="copy-notification" id="notification">Link copied to clipboard!</div>
+
+    <script>
+        let people = [];
+        let currency = 'SEK';
+
+        const currencySymbols = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'SEK': 'kr',
+            'NOK': 'kr',
+            'DKK': 'kr',
+            'CHF': 'Fr',
+            'JPY': '¥',
+            'CNY': '¥',
+            'INR': '₹',
+            'AUD': '$',
+            'CAD': '$',
+            'BRL': 'R$',
+            'MXN': '$'
+        };
+
+        function formatCurrency(amount) {
+            const symbol = currencySymbols[currency] || currency;
+            const formatted = amount.toFixed(2);
+            // For currencies where symbol goes after (SEK, NOK, DKK, CHF)
+            if (['SEK', 'NOK', 'DKK', 'CHF'].includes(currency)) {
+                return `${formatted} ${symbol}`;
+            }
+            return `${symbol}${formatted}`;
+        }
+
+        function currencyChanged() {
+            currency = document.getElementById('currency').value;
+            updateURL();
+            // Recalculate if results are visible
+            if (document.getElementById('results').style.display !== 'none') {
+                calculate();
+            }
+        }
+
+        // Load data from URL on page load
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('data');
+            const urlCurrency = params.get('currency');
+
+            if (urlCurrency && currencySymbols[urlCurrency]) {
+                currency = urlCurrency;
+                document.getElementById('currency').value = currency;
+            }
+
+            if (data) {
+                try {
+                    const decoded = JSON.parse(atob(data));
+                    people = decoded;
+                    renderPeople();
+                    calculate();
+                } catch (e) {
+                    console.error('Error loading from URL:', e);
+                    addPerson();
+                }
+            } else {
+                // Default: add 4 empty people
+                addPerson();
+                addPerson();
+                addPerson();
+                addPerson();
+            }
+        }
+
+        function addPerson() {
+            people.push({ name: '', paid: 0 });
+            renderPeople();
+        }
+
+        function removePerson(index) {
+            people.splice(index, 1);
+            renderPeople();
+        }
+
+        function updatePerson(index, field, value) {
+            people[index][field] = field === 'paid' ? parseFloat(value) || 0 : value;
+        }
+
+        function renderPeople() {
+            const container = document.getElementById('people-list');
+            container.innerHTML = people.map((person, index) => `
+                <div class="person-entry">
+                    <input type="text"
+                           placeholder="Name"
+                           value="${person.name}"
+                           oninput="updatePerson(${index}, 'name', this.value)">
+                    <input type="number"
+                           placeholder="Amount paid"
+                           value="${person.paid || ''}"
+                           step="0.01"
+                           oninput="updatePerson(${index}, 'paid', this.value)">
+                    <button class="remove-btn" onclick="removePerson(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function calculate() {
+            // Filter out people with no name
+            const validPeople = people.filter(p => p.name.trim() !== '');
+
+            if (validPeople.length === 0) {
+                alert('Please add at least one person');
+                return;
+            }
+
+            const total = validPeople.reduce((sum, p) => sum + (p.paid || 0), 0);
+            const perPerson = total / validPeople.length;
+
+            // Calculate balances
+            const balances = validPeople.map(p => ({
+                name: p.name,
+                paid: p.paid || 0,
+                balance: (p.paid || 0) - perPerson
+            }));
+
+            // Separate creditors and debtors
+            const creditors = balances.filter(b => b.balance > 0.01)
+                .sort((a, b) => b.balance - a.balance);
+            const debtors = balances.filter(b => b.balance < -0.01)
+                .map(b => ({ ...b, debt: -b.balance }))
+                .sort((a, b) => b.debt - a.debt);
+
+            // Calculate settlements
+            const settlements = [];
+            let i = 0, j = 0;
+
+            creditors.forEach(c => c.remaining = c.balance);
+            debtors.forEach(d => d.remaining = d.debt);
+
+            while (i < creditors.length && j < debtors.length) {
+                const creditor = creditors[i];
+                const debtor = debtors[j];
+                const amount = Math.min(creditor.remaining, debtor.remaining);
+
+                if (amount > 0.01) {
+                    settlements.push({
+                        from: debtor.name,
+                        to: creditor.name,
+                        amount: amount
+                    });
+
+                    creditor.remaining -= amount;
+                    debtor.remaining -= amount;
+                }
+
+                if (creditor.remaining < 0.01) i++;
+                if (debtor.remaining < 0.01) j++;
+            }
+
+            // Update URL
+            updateURL();
+
+            // Display results
+            displayResults(total, perPerson, balances, settlements);
+        }
+
+        function displayResults(total, perPerson, balances, settlements) {
+            document.getElementById('total').textContent = formatCurrency(total);
+            document.getElementById('perPerson').textContent = formatCurrency(perPerson);
+
+            const balancesHTML = balances.map(b => {
+                const balanceClass = b.balance > 0.01 ? 'owed' : b.balance < -0.01 ? 'owes' : '';
+                const balanceText = b.balance > 0.01
+                    ? `owed <span class="amount owed">${formatCurrency(b.balance)}</span>`
+                    : b.balance < -0.01
+                    ? `owes <span class="amount owes">${formatCurrency(-b.balance)}</span>`
+                    : 'even';
+
+                return `
+                    <div class="result-row">
+                        <strong>${b.name}</strong>: paid ${formatCurrency(b.paid)} - ${balanceText}
+                    </div>
+                `;
+            }).join('');
+
+            const settlementsHTML = settlements.length > 0
+                ? settlements.map((s, i) => `
+                    <div class="settlement-row">
+                        <span><strong>${s.from}</strong> pays <strong>${s.to}</strong></span>
+                        <span class="amount">${formatCurrency(s.amount)}</span>
+                    </div>
+                `).join('')
+                : '<div class="result-row">Everyone is even!</div>';
+
+            document.getElementById('balances').innerHTML = balancesHTML;
+            document.getElementById('settlements').innerHTML = settlementsHTML;
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function updateURL() {
+            const data = btoa(JSON.stringify(people));
+            const url = new URL(window.location);
+            url.searchParams.set('data', data);
+            url.searchParams.set('currency', currency);
+            window.history.replaceState({}, '', url);
+        }
+
+        function shareLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                alert('Failed to copy link. Please copy manually: ' + url);
+            });
+        }
+
+        // Initialize on page load
+        loadFromURL();
+    </script>
+</body>
+</html>
